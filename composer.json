@@ -20,10 +20,5 @@
     },
     "autoload": {
         "psr-0": { "Webmasters": "lib/" }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.2.x-dev"
-        }
     }
 }
