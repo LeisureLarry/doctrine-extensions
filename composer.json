@@ -5,7 +5,8 @@
     "keywords": [
         "doctrine2",
         "extensions",
-        "webmasters"
+        "webmasters",
+		"table-prefix"
     ],
     "homepage": "http://blog-das-oertchen.de/",
     "authors": [
