@@ -1,0 +1,29 @@
+{
+    "name": "webmasters/doctrine-extensions",
+    "type": "library",
+    "description": "Doctrine2 extensions",
+    "keywords": [
+        "doctrine2",
+        "extensions",
+        "webmasters"
+    ],
+    "homepage": "http://blog-das-oertchen.de/",
+    "authors": [
+        {
+            "name": "Jan Teriete",
+            "email": "j.teriete@gmx.de"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "doctrine/orm": ">=2.22"
+    },
+    "autoload": {
+        "psr-0": { "Webmasters": "lib/" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.3.x-dev"
+        }
+    }
+}
