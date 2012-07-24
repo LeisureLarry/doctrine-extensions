@@ -8,11 +8,12 @@
         "webmasters",
 		"table-prefix"
     ],
-    "homepage": "http://blog-das-oertchen.de/",
+    "homepage": "http://github.com/LeisureLarry/doctrine-extensions",
     "authors": [
         {
             "name": "Jan Teriete",
-            "email": "j.teriete@gmx.de"
+            "email": "j.teriete@gmx.de",
+			"homepage": "http://blog-das-oertchen.de/"
         }
     ],
     "require": {
