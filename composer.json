@@ -6,7 +6,8 @@
         "doctrine2",
         "extensions",
         "webmasters",
-		"table-prefix"
+		"table-prefix",
+		"validators"
     ],
     "homepage": "http://github.com/LeisureLarry/doctrine-extensions",
     "authors": [
