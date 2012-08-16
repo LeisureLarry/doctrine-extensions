@@ -20,11 +20,24 @@ class EntityParent
 
   public function toArray($mitId = true)
   {
-    $attribute = get_object_vars($this);
+    $attributes = $this->_convert2Array($this);
     if ($mitId === false) {
-      // wenn $mitId false ist, entferne den Schlüssel id aus dem Ergebnis
-      unset($attribute['id']);
+      // wenn $mitId false ist, entferne den Schluessel id aus dem Ergebnis
+      unset($attributes['id']);
     }
-    return $attribute;
+    return $attributes;
   }
+  
+  protected function _convert2Array($obj) {
+    $ref = new \ReflectionObject($obj);
+    $pros = $ref->getProperties();
+	
+    $result = array();
+    foreach ($pros as $pro) {
+	  $getterName = 'get' . ucfirst($pro->getName());
+      $result[$pro->getName()] = $obj->$getterName();
+    }
+
+    return $result;
+  }  
 }
