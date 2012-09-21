@@ -28,14 +28,15 @@ class EntityParent
     return $attributes;
   }
   
-  protected function _convert2Array($obj) {
+  protected function _convert2Array($obj)
+  {
     $ref = new \ReflectionObject($obj);
-    $pros = $ref->getProperties();
-	
+    $props = $ref->getProperties();
+
     $result = array();
-    foreach ($pros as $pro) {
-	  $getterName = 'get' . ucfirst($pro->getName());
-      $result[$pro->getName()] = $obj->$getterName();
+    foreach ($props as $p) {
+      $getterName = 'get' . ucfirst($p->getName());
+      $result[$p->getName()] = $obj->$getterName();
     }
 
     return $result;
