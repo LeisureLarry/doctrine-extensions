@@ -5,15 +5,16 @@ namespace Webmasters\Doctrine\ORM;
 class EntityValidator
 {
   protected $_em;
-  protected $object;
-  protected $errors = array();
+  protected $_entity;
+  protected $_errors = array();
 
-  public function __construct($em, $object)
+  public function __construct($em, $entity)
   {
     $this->_em = $em;
-    $this->object = $object;
+    $this->_entity = $entity;
 
-    $this->validateData($object->toArray(false));
+    $data = Util\ArrayMapper::setEntity($entity)->toArray(false);
+    $this->validateData($data);
   }
 
   public function validateData($data)
@@ -26,24 +27,37 @@ class EntityValidator
     }
   }
 
-  public function getRepository()
+  public function getEm()
   {
-    $class = get_class($this->object);
-    return $this->_em->getRepository($class);
+    return $this->_em;
+  }
+
+  public function getRepository($class = null)
+  {
+    if (empty($class)) {
+      $class = get_class($this->_entity);
+    }
+
+    return $this->getEm()->getRepository($class);
+  }
+
+  public function getEntity()
+  {
+    return $this->_entity;
   }
 
   public function addError($error)
   {
-    $this->errors[] = $error;
+    $this->_errors[] = $error;
   }
 
   public function getErrors()
   {
-    return $this->errors;
+    return $this->_errors;
   }
 
   public function isValid()
   {
-    return empty($this->errors);
+    return empty($this->_errors);
   }
 }

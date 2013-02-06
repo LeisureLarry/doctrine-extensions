@@ -29,11 +29,11 @@ class EntityManager extends \Doctrine\ORM\EntityManager
     return new EntityManager($conn, $config, $evm);
   }
 
-  public function getValidator($object)
+  public function getValidator($entity)
   {
-    $class = get_class($object);
+    $class = get_class($entity);
     $class_name = preg_replace('/^[A-Z][a-z]+./', '', $class);
     $validator = 'Validators\\' . $class_name . 'Validator';
-    return new $validator($this, $object);
+    return new $validator($this, $entity);
   }
 }

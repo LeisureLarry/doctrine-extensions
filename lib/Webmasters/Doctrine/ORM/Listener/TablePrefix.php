@@ -2,7 +2,7 @@
 
 namespace Webmasters\Doctrine\ORM\Listener;
 
-use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
+use \Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 
 class TablePrefix
 {
