@@ -102,7 +102,10 @@ class Bootstrap
   // *** Display Errors In Debug Mode (Default: true) ***
   protected function errorMode()
   {
-    if ($this->isDebug()) {
+    if (!$this->isDebug()) {
+      error_reporting(null);
+      ini_set('display_errors', 0);
+    } else {
       error_reporting(E_ALL);
       ini_set('display_errors', 1);
       if (!ini_get('display_errors')) {
