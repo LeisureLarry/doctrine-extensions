@@ -11,6 +11,7 @@
         "validators"
     ],
     "homepage": "http://github.com/LeisureLarry/doctrine-extensions",
+    "license": "MIT",
     "authors": [
         {
             "name": "Jan Teriete",
