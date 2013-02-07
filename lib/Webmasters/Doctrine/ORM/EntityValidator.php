@@ -27,7 +27,7 @@ class EntityValidator
     }
   }
 
-  public function getEm()
+  public function getEntityManager()
   {
     return $this->_em;
   }
