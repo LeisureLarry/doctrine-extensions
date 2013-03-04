@@ -7,7 +7,6 @@
         "extensions",
         "webmasters",
         "bootstrap",
-        "table-prefix",
         "validators"
     ],
     "homepage": "http://github.com/LeisureLarry/doctrine-extensions",
