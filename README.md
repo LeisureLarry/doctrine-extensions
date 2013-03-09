@@ -1,6 +1,6 @@
 # doctrine-extensions
 
-## Webmasters Doctrine Extensions - Just Another Doctrine2 extensions
+## Webmasters Doctrine Extensions - Just Another Doctrine2 Extension
 
 ### Bootstrap
 
