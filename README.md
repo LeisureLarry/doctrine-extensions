@@ -1,7 +1,8 @@
-Doctrine2 extensions
-==============
+# doctrine-extensions
 
-Bootstrap
+## Webmasters Doctrine Extensions - Just Another Doctrine2 extensions
+
+### Bootstrap
 
 ```php
 <?php
