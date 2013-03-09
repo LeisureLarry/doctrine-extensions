@@ -4,60 +4,60 @@ namespace Webmasters\Doctrine\ORM;
 
 class EntityValidator
 {
-  protected $_em;
-  protected $_entity;
-  protected $_errors = array();
+    protected $_em;
+    protected $_entity;
+    protected $_errors = array();
 
-  public function __construct($em, $entity)
-  {
-    $this->_em = $em;
-    $this->_entity = $entity;
+    public function __construct($em, $entity)
+    {
+        $this->_em = $em;
+        $this->_entity = $entity;
 
-    $data = Util\ArrayMapper::setEntity($entity)->toArray(false);
-    $this->validateData($data);
-  }
-
-  public function validateData($data)
-  {
-    foreach ($data as $key => $val) {
-      $validate = 'validate' . ucfirst($key);
-      if (method_exists($this, $validate)) {
-        $this->$validate($val);
-      }
-    }
-  }
-
-  public function getEntityManager()
-  {
-    return $this->_em;
-  }
-
-  public function getRepository($class = null)
-  {
-    if (empty($class)) {
-      $class = get_class($this->_entity);
+        $data = Util\ArrayMapper::setEntity($entity)->toArray(false);
+        $this->validateData($data);
     }
 
-    return $this->getEm()->getRepository($class);
-  }
+    public function validateData($data)
+    {
+        foreach ($data as $key => $val) {
+            $validate = 'validate' . ucfirst($key);
+            if (method_exists($this, $validate)) {
+                $this->$validate($val);
+            }
+        }
+    }
 
-  public function getEntity()
-  {
-    return $this->_entity;
-  }
+    public function getEntityManager()
+    {
+        return $this->_em;
+    }
 
-  public function addError($error)
-  {
-    $this->_errors[] = $error;
-  }
+    public function getRepository($class = null)
+    {
+        if (empty($class)) {
+            $class = get_class($this->_entity);
+        }
 
-  public function getErrors()
-  {
-    return $this->_errors;
-  }
+        return $this->getEm()->getRepository($class);
+    }
 
-  public function isValid()
-  {
-    return empty($this->_errors);
-  }
+    public function getEntity()
+    {
+        return $this->_entity;
+    }
+
+    public function addError($error)
+    {
+        $this->_errors[] = $error;
+    }
+
+    public function getErrors()
+    {
+        return $this->_errors;
+    }
+
+    public function isValid()
+    {
+        return empty($this->_errors);
+    }
 }
