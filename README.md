@@ -7,7 +7,7 @@
 ```php
 <?php
 
-// Konfiguration der Datenbankverbindung
+// Database Config
 $connectionOptions = array(
     'default' => array(
         'driver' => 'pdo_mysql',
@@ -18,18 +18,17 @@ $connectionOptions = array(
     ),
 );
 
-// Konfiguration der Anwendung
+// Application Config
 $applicationOptions = array(
     'debug_mode' => false,
 );
 
-// Einbindung des Autoloaders
+// Init Composer Autoloader
 require 'vendor/autoload.php';
 
-$em = Webmasters\Doctrine\Bootstrap::getInstance(
-    $connectionOptions,
-    $applicationOptions
-)->getEm();
+// Init Bootstrap and get Doctrine Entity Manager
+$bootstrap = Webmasters\Doctrine\Bootstrap::getInstance($connectionOptions, $applicationOptions);
+$em = $bootstrap->getEm();
 
 ?>
 ```
