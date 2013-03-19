@@ -38,7 +38,7 @@ class EntityValidator
             $class = get_class($this->_entity);
         }
 
-        return $this->getEm()->getRepository($class);
+        return $this->getEntityManager()->getRepository($class);
     }
 
     public function getEntity()

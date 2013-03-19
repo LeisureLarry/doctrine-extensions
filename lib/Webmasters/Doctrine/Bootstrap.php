@@ -10,17 +10,17 @@ use \Webmasters\Doctrine\ORM as WORM;
 
 class Bootstrap
 {
-    protected static $_instance = null;
+    protected static $_singletonInstance = null;
     protected $_connectionOptions = array();
     protected $_applicationOptions = array();
     protected $_autoGenerateProxyClasses = false;
 
     public static function getInstance($connectionOptions = array(), $applicationOptions = array())
     {
-        if (self::$_instance == null) {
-            self::$_instance = new Bootstrap($connectionOptions, $applicationOptions);
+        if (self::$_singletonInstance == null) {
+            self::$_singletonInstance = new Bootstrap($connectionOptions, $applicationOptions);
         }
-        return self::$_instance;
+        return self::$_singletonInstance;
     }
 
     protected function __construct($connectionOptions, $applicationOptions)
@@ -224,4 +224,5 @@ class Bootstrap
         $em = WORM\EntityManager::create($connectionOptions, $config, $evm);
         return $em;
     }
+
 }
