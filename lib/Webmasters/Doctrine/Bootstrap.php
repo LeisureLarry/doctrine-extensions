@@ -11,9 +11,13 @@ use \Webmasters\Doctrine\ORM as WORM;
 class Bootstrap
 {
     protected static $_singletonInstance = null;
+
     protected $_connectionOptions = array();
     protected $_applicationOptions = array();
     protected $_autoGenerateProxyClasses = false;
+    protected $_cache;
+    protected $_cachedAnnotationReader;
+    protected $_em;
 
     public static function getInstance($connectionOptions = array(), $applicationOptions = array())
     {
@@ -25,16 +29,17 @@ class Bootstrap
 
     protected function __construct($connectionOptions, $applicationOptions)
     {
-        $this->setConnectionOptions($connectionOptions);
-        $this->setApplicationOptions($applicationOptions);
-        $this->errorMode();
+        $this->_setConnectionOptions($connectionOptions);
+        $this->_setApplicationOptions($applicationOptions);
+        $this->_errorMode();
+        $this->_boot();
     }
 
     protected function __clone()
     {
     }
 
-    public function setConnectionOptions($options)
+    protected function _setConnectionOptions($options)
     {
         $host = php_uname('n');
 
@@ -49,7 +54,7 @@ class Bootstrap
         $this->_connectionOptions = $options;
     }
 
-    public function setApplicationOptions($options)
+    protected function _setApplicationOptions($options)
     {
         if (!isset($options['debug_mode'])) {
             $options['debug_mode'] = true;
@@ -94,13 +99,18 @@ class Bootstrap
         return $result;
     }
 
+    public function setOption($key, $value)
+    {
+        $this->_applicationOptions[$key] = $value;
+    }
+
     public function isDebug()
     {
         return $this->getOption('debug_mode') === true;
     }
 
     // *** Display Errors In Debug Mode (Default: true) ***
-    protected function errorMode()
+    protected function _errorMode()
     {
         if (!$this->isDebug()) {
             error_reporting(null);
@@ -116,7 +126,7 @@ class Bootstrap
 
     protected function _initCache()
     {
-        if ($this->getOption('cache') == null) {
+        if ($this->getOption('cache') === null) {
             $className = '\\Doctrine\\Common\Cache\\'; // Namespace
 
             if (!$this->isDebug() && function_exists('apc_store')) {
@@ -211,18 +221,31 @@ class Bootstrap
         return $evm;
     }
 
-    public function getEm()
+    protected function _boot()
     {
-        $cache = $this->_initCache();
-        $cachedAnnotationReader = $this->_initAnnotationReader($cache);
-        $driverChain = $this->_initDriverChain($cachedAnnotationReader);
+        $this->_cache = $this->_initCache();
+        $this->_cachedAnnotationReader = $this->_initAnnotationReader($this->_cache);
+        $driverChain = $this->_initDriverChain($this->_cachedAnnotationReader);
 
         $connectionOptions = $this->_connectionOptions;
-        $config = $this->_initOrmConfiguration($driverChain, $cache);
-        $evm = $this->_initEventManager($cachedAnnotationReader);
+        $config = $this->_initOrmConfiguration($driverChain, $this->_cache);
+        $evm = $this->_initEventManager($this->_cachedAnnotationReader);
 
-        $em = WORM\EntityManager::create($connectionOptions, $config, $evm);
-        return $em;
+        $this->_em = WORM\EntityManager::create($connectionOptions, $config, $evm);
     }
 
+    public function getAnnotationReader()
+    {
+        return $this->_cachedAnnotationReader;
+    }
+
+    public function getCache()
+    {
+        return $this->_cache;
+    }
+
+    public function getEm()
+    {
+        return $this->_em;
+    }
 }

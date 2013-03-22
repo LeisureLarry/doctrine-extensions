@@ -34,6 +34,13 @@ class EntityManager extends \Doctrine\ORM\EntityManager
         $class = get_class($entity);
         $class_name = preg_replace('/^[A-Z][a-z]+./', '', $class);
         $validator = 'Validators\\' . $class_name . 'Validator';
+
+        if (!class_exists($validator)) {
+            throw new \Exception(
+                sprintf('Validator class %s missing', $validator)
+            );
+        }
+
         return new $validator($this, $entity);
     }
 }
