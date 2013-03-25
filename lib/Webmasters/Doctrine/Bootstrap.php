@@ -14,10 +14,14 @@ class Bootstrap
 
     protected $_connectionOptions = array();
     protected $_applicationOptions = array();
-    protected $_autoGenerateProxyClasses = false;
+
     protected $_cache;
+    protected $_annotationReader;
     protected $_cachedAnnotationReader;
-    protected $_em;
+    protected $_driverChain;
+    protected $_ormConfiguration;
+    protected $_eventManager;
+    protected $_entityManager;
 
     public static function getInstance($connectionOptions = array(), $applicationOptions = array())
     {
@@ -32,7 +36,6 @@ class Bootstrap
         $this->_setConnectionOptions($connectionOptions);
         $this->_setApplicationOptions($applicationOptions);
         $this->_errorMode();
-        $this->_boot();
     }
 
     protected function __clone()
@@ -56,30 +59,33 @@ class Bootstrap
 
     protected function _setApplicationOptions($options)
     {
-        if (!isset($options['debug_mode'])) {
-            $options['debug_mode'] = true;
+        $vendorDir = realpath(__DIR__ . '/../../../../..');
+        $baseDir = dirname($vendorDir);
+
+        $defaultOptions = array(
+            'debug_mode' => true,
+            'vendor_dir' => $vendorDir,
+            'base_dir' => $baseDir,
+            'entity_dir' => $baseDir . '/models/Entities',
+            'proxy_dir' => realpath(sys_get_temp_dir()), // Ablage im Temp-Verzeichnis
+            'autogenerate_proxy_classes' => true
+        );
+
+        $options = $defaultOptions + $options;
+
+        if (!isset($options['cache'])) {
+            $className = '\\Doctrine\\Common\Cache\\'; // Namespace
+
+            if (!$options['debug_mode'] && function_exists('apc_store')) {
+                $className .= 'ApcCache'; // Only use APC in production environment
+            } else {
+                $className .= 'ArrayCache';
+            }
+
+            $options['cache'] = $className;
         }
 
-        if (!isset($options['application_path'])) {
-            $options['application_path'] = preg_replace(
-                '/' . preg_quote(DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR, '/') . '.*$/',
-                '',
-                dirname(__DIR__)
-            );
-        }
-
-        if (!isset($options['proxy_path'])) {
-            $this->_autoGenerateProxyClasses = true;
-            $options['proxy_path'] = realpath(sys_get_temp_dir()); // Ablage im Temp-Verzeichnis
-        }
-
-        if (isset($options['cache']) && !is_object($options['cache'])) {
-            $options['cache'] = new $options['cache']();
-        } elseif (!isset($options['cache'])) {
-            $options['cache'] = null;
-        }
-
-        $this->_applicationOptions = $options;
+        $this->_applicationOptions = new WORM\Util\OptionsCollection($options);
     }
 
     public function getApplicationOptions()
@@ -87,26 +93,19 @@ class Bootstrap
         return $this->_applicationOptions;
     }
 
-    public function getOption($key)
-    {
-        $options = $this->getApplicationOptions();
-
-        $result = null;
-        if (!empty($key) && isset($options[$key])) {
-            $result = $options[$key];
-        }
-
-        return $result;
-    }
-
     public function setOption($key, $value)
     {
-        $this->_applicationOptions[$key] = $value;
+        $this->_applicationOptions->set($key, $value);
+    }
+
+    protected  function _getOption($key)
+    {
+        return $this->getApplicationOptions()->get($key);
     }
 
     public function isDebug()
     {
-        return $this->getOption('debug_mode') === true;
+        return $this->_getOption('debug_mode') === true;
     }
 
     // *** Display Errors In Debug Mode (Default: true) ***
@@ -124,128 +123,121 @@ class Bootstrap
         }
     }
 
-    protected function _initCache()
+    public function getCache()
     {
-        if ($this->getOption('cache') === null) {
-            $className = '\\Doctrine\\Common\Cache\\'; // Namespace
-
-            if (!$this->isDebug() && function_exists('apc_store')) {
-                $className .= 'ApcCache';
-            } else {
-                $className .= 'ArrayCache';
+        if ($this->_cache === null) {
+            $this->_cache = $this->_getOption('cache');
+            if (!is_object($this->_cache)) {
+                $this->_cache = new $this->_cache();
             }
-
-            $cache = new $className();
-        } else {
-            $cache = $this->getOption('cache');
         }
 
-        return $cache;
-    }
-
-    protected function _initAnnotationReader($cache)
-    {
-        $annotationReader = new Common\Annotations\AnnotationReader();
-
-        $cachedAnnotationReader = new Common\Annotations\CachedReader(
-            $annotationReader, // den Reader
-            $cache, // und den Cache verwenden
-            $this->isDebug()
-        );
-
-        return $cachedAnnotationReader;
-    }
-
-    protected function _initDriverChain($cachedAnnotationReader)
-    {
-        $driverChain = new ORM\Mapping\Driver\DriverChain();
-
-        $path = $this->getOption('application_path');
-        $ormPath = realpath($path . '/vendor/doctrine/orm/lib/Doctrine/ORM');
-
-        // Sicherheitshalber die Datei fuer die Standard Doctrine Annotationen registrieren
-        Common\Annotations\AnnotationRegistry::registerFile(
-            $ormPath . '/Mapping/Driver/DoctrineAnnotations.php'
-        );
-
-        // Gedmo Annotationen aktivieren
-        \Gedmo\DoctrineExtensions::registerAbstractMappingIntoDriverChainORM(
-            $driverChain, // die Driver-Chain
-            $cachedAnnotationReader // und den gecachten AnnotationReader nutzen
-        );
-
-        // Wir verwenden die neue Annotations-Syntax für die Entities
-        $annotationDriver = new ORM\Mapping\Driver\AnnotationDriver(
-            $cachedAnnotationReader, // den gecachten AnnotationReader nutzen
-            array($path . '/models/Entities') // Pfad der Entities
-        );
-
-        // AnnotationDriver fuer den Entity-Namespace aktivieren
-        $driverChain->addDriver($annotationDriver, 'Entities');
-
-        return $driverChain;
-    }
-
-    protected function _initOrmConfiguration($driverChain, $cache)
-    {
-        $config = new ORM\Configuration();
-
-        // Teile Doctrine mit, wie es mit Proxy-Klassen umgehen soll
-        $config->setProxyDir($this->getOption('proxy_path'));
-        $config->setProxyNamespace('Proxies');
-        $config->setAutoGenerateProxyClasses($this->_autoGenerateProxyClasses);
-
-        // Ergaenze die DriverChain in der Konfiguration
-        $config->setMetadataDriverImpl($driverChain);
-
-        // Cache fuer Metadaten, Queries und Results benutzen
-        $config->setMetadataCacheImpl($cache);
-        $config->setQueryCacheImpl($cache);
-        $config->setResultCacheImpl($cache);
-
-        return $config;
-    }
-
-    protected function _initEventManager($cachedAnnotationReader)
-    {
-        $evm = new Common\EventManager();
-
-        // Erweiterungen aktivieren
-        $timestampableListener = new \Gedmo\Timestampable\TimestampableListener();
-        $timestampableListener->setAnnotationReader($cachedAnnotationReader);
-        $evm->addEventSubscriber($timestampableListener);
-
-        // MySQL set names UTF-8
-        $evm->addEventSubscriber(new DBAL\Event\Listeners\MysqlSessionInit());
-
-        return $evm;
-    }
-
-    protected function _boot()
-    {
-        $this->_cache = $this->_initCache();
-        $this->_cachedAnnotationReader = $this->_initAnnotationReader($this->_cache);
-        $driverChain = $this->_initDriverChain($this->_cachedAnnotationReader);
-
-        $connectionOptions = $this->_connectionOptions;
-        $config = $this->_initOrmConfiguration($driverChain, $this->_cache);
-        $evm = $this->_initEventManager($this->_cachedAnnotationReader);
-
-        $this->_em = WORM\EntityManager::create($connectionOptions, $config, $evm);
+        return $this->_cache;
     }
 
     public function getAnnotationReader()
     {
+        if ($this->_annotationReader === null) {
+            $this->_annotationReader = new Common\Annotations\AnnotationReader();
+        }
+
+        return $this->_annotationReader;
+    }
+
+    public function getCachedAnnotationReader()
+    {
+        if ($this->_cachedAnnotationReader === null) {
+            $this->_cachedAnnotationReader = new Common\Annotations\CachedReader(
+                $this->getAnnotationReader(),
+                $this->getCache(),
+                $this->isDebug()
+            );
+        }
+
         return $this->_cachedAnnotationReader;
     }
 
-    public function getCache()
+    public function getDriverChain()
     {
-        return $this->_cache;
+        if ($this->_driverChain === null) {
+            $this->_driverChain = new ORM\Mapping\Driver\DriverChain();
+
+            $ormDir = realpath($this->_getOption('vendor_dir') . '/doctrine/orm/lib/Doctrine/ORM');
+
+            // Sicherheitshalber die Datei fuer die Standard Doctrine Annotationen registrieren
+            Common\Annotations\AnnotationRegistry::registerFile(
+                $ormDir . '/Mapping/Driver/DoctrineAnnotations.php'
+            );
+
+            // Gedmo Annotationen aktivieren
+            \Gedmo\DoctrineExtensions::registerAbstractMappingIntoDriverChainORM(
+                $this->_driverChain,
+                $this->getCachedAnnotationReader()
+            );
+
+            // Wir verwenden die neue Annotations-Syntax für die Entities
+            $annotationDriver = new ORM\Mapping\Driver\AnnotationDriver(
+                $this->getCachedAnnotationReader(),
+                array($this->_getOption('entity_dir'))
+            );
+
+            // AnnotationDriver fuer den Entity-Namespace aktivieren
+            $this->_driverChain->addDriver($annotationDriver, 'Entities');
+        }
+
+        return $this->_driverChain;
+    }
+
+    public function getOrmConfiguration()
+    {
+        if ($this->_ormConfiguration === null) {
+            $this->_ormConfiguration = new ORM\Configuration();
+
+            // Teile Doctrine mit, wie es mit Proxy-Klassen umgehen soll
+            $this->_ormConfiguration->setProxyNamespace('Proxies');
+            $this->_ormConfiguration->setProxyDir($this->_getOption('proxy_dir'));
+            $this->_ormConfiguration->setAutoGenerateProxyClasses($this->_getOption('autogenerate_proxy_classes'));
+
+            // Ergaenze die DriverChain in der Konfiguration
+            $this->_ormConfiguration->setMetadataDriverImpl($this->getDriverChain());
+
+            // Cache fuer Metadaten, Queries und Results benutzen
+            $cache = $this->getCache();
+            $this->_ormConfiguration->setMetadataCacheImpl($cache);
+            $this->_ormConfiguration->setQueryCacheImpl($cache);
+            $this->_ormConfiguration->setResultCacheImpl($cache);
+        }
+
+        return $this->_ormConfiguration;
+    }
+
+    public function getEventManager()
+    {
+        if ($this->_eventManager === null) {
+            $this->_eventManager = new Common\EventManager();
+
+            // Erweiterungen aktivieren
+            $timestampableListener = new \Gedmo\Timestampable\TimestampableListener();
+            $timestampableListener->setAnnotationReader($this->getCachedAnnotationReader());
+            $this->_eventManager->addEventSubscriber($timestampableListener);
+
+            // MySQL set names UTF-8
+            $this->_eventManager->addEventSubscriber(new DBAL\Event\Listeners\MysqlSessionInit());
+        }
+
+        return $this->_eventManager;
     }
 
     public function getEm()
     {
-        return $this->_em;
+        if ($this->_entityManager === null) {
+            $this->_entityManager = WORM\EntityManager::create(
+                $this->_connectionOptions,
+                $this->getOrmConfiguration(),
+                $this->getEventManager()
+            );
+        }
+
+        return $this->_entityManager;
     }
 }
