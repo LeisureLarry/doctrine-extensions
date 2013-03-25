@@ -21,8 +21,8 @@
     ],
     "require": {
         "php": ">=5.3.2",
-        "doctrine/orm": ">=2.2.2,<2.3",
-        "gedmo/doctrine-extensions": ">=v2.3.2,<v2.4"
+        "doctrine/orm": "~2.2.2",
+        "gedmo/doctrine-extensions": "~2.3.2"
     },
     "autoload": {
         "psr-0": { "Webmasters": "lib/" }
