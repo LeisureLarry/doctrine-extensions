@@ -19,7 +19,6 @@
             "homepage": "http://blog-das-oertchen.de/"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
         "php": ">=5.3.2",
         "doctrine/orm": ">=2.2.2,<2.4-dev",
