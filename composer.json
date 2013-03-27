@@ -3,11 +3,10 @@
     "type": "library",
     "description": "Doctrine2 extensions",
     "keywords": [
+        "webmasters",
         "doctrine2",
         "extensions",
-        "webmasters",
         "bootstrap",
-        "table-prefix",
         "validators"
     ],
     "homepage": "http://github.com/LeisureLarry/doctrine-extensions",
