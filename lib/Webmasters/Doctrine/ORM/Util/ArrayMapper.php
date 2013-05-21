@@ -57,7 +57,9 @@ class ArrayMapper
         $result = array();
         foreach ($props as $p) {
             $getterName = 'get' . ucfirst($p->getName());
-            $result[$p->getName()] = $entity->$getterName();
+            if (method_exists($this->_entity, $getterName)) {
+                $result[$p->getName()] = $entity->$getterName();
+            }
         }
 
         return $result;
