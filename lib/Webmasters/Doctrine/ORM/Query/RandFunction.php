@@ -2,6 +2,12 @@
 
 namespace Webmasters\Doctrine\ORM\Query;
 
+/**
+ * FunctionClass to enable random sorting
+ *
+ * @link https://gist.github.com/Ocramius/919465
+ * @author Marco Pivetta
+ */
 use \Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use \Doctrine\ORM\Query\Lexer;
 

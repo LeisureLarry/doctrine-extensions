@@ -2,6 +2,12 @@
 
 namespace Webmasters\Doctrine\ORM\Listener;
 
+/**
+ * Listener to enable table prefixes
+ *
+ * @link http://elephpants.blog.redpill-linpro.com/2010/11/25/doctrine-2-table-prefixes-with-many-to-many-jointable/
+ * @author Daniel André
+ */
 use \Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 
 class TablePrefix
