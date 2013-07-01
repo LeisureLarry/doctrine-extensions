@@ -15,6 +15,7 @@ $connectionOptions = array(
         'host' => 'localhost',
         'user' => 'root',
         'password' => '',
+        'prefix' => '',
     ),
 );
 
