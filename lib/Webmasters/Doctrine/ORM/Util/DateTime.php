@@ -6,6 +6,7 @@ class DateTime
 {
     protected $_raw = null;
     protected $_datetime = null;
+    protected $_errors = array();
 
     public function __construct($value)
     {
@@ -17,6 +18,7 @@ class DateTime
         } elseif ($value instanceof DateTime) {
             $this->_raw = $value->getRaw();
             $this->_datetime = $value->getDateTime();
+            $this->_errors = $value->getErrors();
         }
     }
 
@@ -24,6 +26,7 @@ class DateTime
     {
         if ($this->_isValidDate($this->_raw)) {
             $this->_datetime = new \DateTime($this->_raw);
+            $this->_errors = \DateTime::getLastErrors();
         }
     }
 
@@ -48,6 +51,11 @@ class DateTime
     public function getDateTime()
     {
         return $this->_datetime;
+    }
+
+    public function getErrors()
+    {
+        return $this->_errors;
     }
 
     public function format($format)
@@ -79,7 +87,19 @@ class DateTime
 
     public function isValid()
     {
-        return (!empty($this->_datetime) && ($this->_datetime instanceof \DateTime));
+        return (
+            !empty($this->_datetime) &&
+            ($this->_datetime instanceof \DateTime) &&
+            !$this->hasRollOver()
+        );
+    }
+
+    public function hasRollOver()
+    {
+        return (
+            isset($this->_errors['warnings']) &&
+            isset($this->_errors['warnings'][11])
+        );
     }
 
     public function isValidClosingDate($datetime)
