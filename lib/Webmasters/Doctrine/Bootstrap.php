@@ -71,7 +71,7 @@ class Bootstrap
             'autogenerate_proxy_classes' => true
         );
 
-        $options = $defaultOptions + $options;
+        $options = $options + $defaultOptions;
 
         if (!isset($options['cache'])) {
             $className = '\\Doctrine\\Common\Cache\\'; // Namespace
