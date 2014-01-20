@@ -66,12 +66,16 @@ class Bootstrap
             'debug_mode' => true,
             'vendor_dir' => $vendorDir,
             'base_dir' => $baseDir,
-            'entity_dir' => $baseDir . '/models/Entities',
+            'entity_dir' => $baseDir . '/src/Models',
             'proxy_dir' => realpath(sys_get_temp_dir()), // Ablage im Temp-Verzeichnis
             'autogenerate_proxy_classes' => true
         );
 
         $options = $options + $defaultOptions;
+        
+        if (!isset($options['entity_namespace'])) {
+            $options['entity_namespace'] = basename($options['entity_dir']);
+        }
 
         if (!isset($options['cache'])) {
             $className = '\\Doctrine\\Common\Cache\\'; // Namespace
@@ -182,7 +186,7 @@ class Bootstrap
             );
 
             // AnnotationDriver fuer den Entity-Namespace aktivieren
-            $this->_driverChain->addDriver($annotationDriver, 'Entities');
+            $this->_driverChain->addDriver($annotationDriver, $this->_getOption('entity_namespace'));
         }
 
         return $this->_driverChain;
