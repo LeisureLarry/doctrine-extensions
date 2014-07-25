@@ -1,13 +1,15 @@
 # doctrine-extensions
 
-## Webmasters Doctrine Extensions - Just Another Doctrine2 Extension
+## Webmasters Doctrine Extensions
+
+Just Another Doctrine2 Extension
 
 ### Bootstrap
 
 ```php
 <?php
 
-// Database Config
+// MySQL database configuration
 $connectionOptions = array(
     'default' => array(
         'driver' => 'pdo_mysql',
@@ -19,19 +21,18 @@ $connectionOptions = array(
     ),
 );
 
-// Application Config
+// Application/Doctrine configuration
 $applicationOptions = array(
     'debug_mode' => false,
 );
 
-// Init Composer Autoloader
-require 'vendor/autoload.php';
+// Use Composer autoloading
+require_once 'vendor/autoload.php';
 
-// Init Bootstrap and get Doctrine Entity Manager
+// Get Doctrine entity manager
 $bootstrap = Webmasters\Doctrine\Bootstrap::getInstance($connectionOptions, $applicationOptions);
 $em = $bootstrap->getEm();
 
-?>
 ```
 
 ### Idea

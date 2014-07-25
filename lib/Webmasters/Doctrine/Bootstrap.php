@@ -15,11 +15,13 @@ class Bootstrap
     protected $_connectionOptions = array();
     protected $_applicationOptions = array();
 
-    protected $_cache;
     protected $_annotationReader;
+    protected $_cache;
     protected $_cachedAnnotationReader;
     protected $_driverChain;
+    protected $_listeners;
     protected $_ormConfiguration;
+
     protected $_eventManager;
     protected $_entityManager;
 
@@ -33,8 +35,33 @@ class Bootstrap
 
     protected function __construct($connectionOptions, $applicationOptions)
     {
+        $vendorDir = realpath(__DIR__ . '/../../../../..');
+        $baseDir = dirname($vendorDir);
+        $host = php_uname('n');
+
+        if (empty($connectionOptions)) {
+            $path = $baseDir . '/config/';
+            if (file_exists($path . $host . '-config.php')) {
+                require_once $path . $host . '-config.php';
+            } elseif (file_exists($path . 'default-config.php')) {
+                require_once $path . 'default-config.php';
+            } else {
+                die(sprintf('"config/default-config.php" or "config/%s-config.php" missing!', $host));
+            }
+        }
+
+        $defaultOptions = array(
+            'autogenerate_proxy_classes' => true,
+            'debug_mode' => true,
+            'base_dir' => $baseDir,
+            'entity_dir' => $baseDir . '/src/Models',
+            'proxy_dir' => realpath(sys_get_temp_dir()), // Ablage im Temp-Verzeichnis
+            'vendor_dir' => $vendorDir,
+            'gedmo_ext' => array('Timestampable'),
+        );
+
         $this->_setConnectionOptions($connectionOptions);
-        $this->_setApplicationOptions($applicationOptions);
+        $this->_setApplicationOptions($applicationOptions + $defaultOptions);
         $this->_errorMode();
     }
 
@@ -44,35 +71,11 @@ class Bootstrap
 
     protected function _setConnectionOptions($options)
     {
-        $host = php_uname('n');
-
-        if (isset($options[$host])) {
-            $options = $options[$host];
-        } elseif (isset($options['default'])) {
-            $options = $options['default'];
-        } else {
-            die(sprintf('Connection options for "default" or "%s" missing!', $host));
-        }
-
         $this->_connectionOptions = $options;
     }
 
     protected function _setApplicationOptions($options)
     {
-        $vendorDir = realpath(__DIR__ . '/../../../../..');
-        $baseDir = dirname($vendorDir);
-
-        $defaultOptions = array(
-            'debug_mode' => true,
-            'vendor_dir' => $vendorDir,
-            'base_dir' => $baseDir,
-            'entity_dir' => $baseDir . '/src/Models',
-            'proxy_dir' => realpath(sys_get_temp_dir()), // Ablage im Temp-Verzeichnis
-            'autogenerate_proxy_classes' => true
-        );
-
-        $options = $options + $defaultOptions;
-        
         if (!isset($options['entity_namespace'])) {
             $options['entity_namespace'] = basename($options['entity_dir']);
         }
@@ -102,7 +105,7 @@ class Bootstrap
         $this->_applicationOptions->set($key, $value);
     }
 
-    protected  function _getOption($key)
+    protected function _getOption($key)
     {
         return $this->getApplicationOptions()->get($key);
     }
@@ -117,7 +120,7 @@ class Bootstrap
     {
         if (!$this->isDebug()) {
             error_reporting(null);
-            ini_set('display_errors', 0);
+            ini_set('display_errors', 0); // nur bei nicht fatalen Fehlern
         } else {
             error_reporting(E_ALL);
             ini_set('display_errors', 1);
@@ -173,11 +176,17 @@ class Bootstrap
                 $ormDir . '/Mapping/Driver/DoctrineAnnotations.php'
             );
 
-            // Gedmo Annotationen aktivieren
-            \Gedmo\DoctrineExtensions::registerAbstractMappingIntoDriverChainORM(
-                $this->_driverChain,
-                $this->getCachedAnnotationReader()
-            );
+            // Gedmo Annotationen aktivieren sofern Paket installiert
+            if ($this->_getOption('gedmo_ext')) {
+                if (class_exists('\\Gedmo\\DoctrineExtensions')) {
+                    \Gedmo\DoctrineExtensions::registerAbstractMappingIntoDriverChainORM(
+                        $this->_driverChain,
+                        $this->getCachedAnnotationReader()
+                    );
+                } else {
+                    die('"gedmo/doctrine-extensions" missing!');
+                }
+            }
 
             // Wir verwenden die neue Annotations-Syntax für die Entities
             $annotationDriver = new ORM\Mapping\Driver\AnnotationDriver(
@@ -215,15 +224,41 @@ class Bootstrap
         return $this->_ormConfiguration;
     }
 
+    private function _initGedmoListeners()
+    {
+        if ($this->_getOption('gedmo_ext') && is_array($this->_getOption('gedmo_ext'))) {
+            $this->_listeners['Gedmo'] = array();
+            foreach ($this->_getOption('gedmo_ext') as $name) {
+                if (is_string($name)) {
+                    $listenerClass = '\\Gedmo\\' . $name . '\\' . $name . 'Listener';
+                    $listener = new $listenerClass();
+                    $this->_listeners['Gedmo'][$name] = $listener;
+                }
+
+                $listener->setAnnotationReader($this->getCachedAnnotationReader());
+                $this->_eventManager->addEventSubscriber($listener);
+            }
+        }
+    }
+
+    public function getListener($ext, $name)
+    {
+        if (!isset($this->_listeners[$ext][$name])) {
+            throw new \Exception(
+                sprintf('Listener "%s\%s" missing', $ext, $name)
+            );
+        }
+
+        return $this->_listeners[$ext][$name];
+    }
+
     public function getEventManager()
     {
         if ($this->_eventManager === null) {
             $this->_eventManager = new Common\EventManager();
 
             // Erweiterungen aktivieren
-            $timestampableListener = new \Gedmo\Timestampable\TimestampableListener();
-            $timestampableListener->setAnnotationReader($this->getCachedAnnotationReader());
-            $this->_eventManager->addEventSubscriber($timestampableListener);
+            $this->_initGedmoListeners();
 
             // MySQL set names UTF-8
             $this->_eventManager->addEventSubscriber(new DBAL\Event\Listeners\MysqlSessionInit());
