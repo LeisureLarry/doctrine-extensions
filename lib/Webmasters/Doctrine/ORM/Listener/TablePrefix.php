@@ -12,20 +12,18 @@ use \Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 
 class TablePrefix
 {
-    protected $_prefix = '';
+    protected $prefix = '';
 
     public function __construct($prefix)
     {
-        $this->_prefix = (string)$prefix;
+        $this->prefix = (string)$prefix;
     }
 
     public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs)
     {
-        $prefix = $this->_prefix;
-
         $classMetadata = $eventArgs->getClassMetadata();
         $classMetadata->setPrimaryTable(
-            array('name' => $prefix . $classMetadata->getTableName())
+            array('name' => $this->prefix . $classMetadata->getTableName())
         );
 
         foreach ($classMetadata->getAssociationMappings() as $fieldName => $mapping) {
@@ -34,7 +32,7 @@ class TablePrefix
                 !empty($classMetadata->associationMappings[$fieldName]['joinTable'])
             ) {
                 $mappedTableName = $classMetadata->associationMappings[$fieldName]['joinTable']['name'];
-                $classMetadata->associationMappings[$fieldName]['joinTable']['name'] = $prefix . $mappedTableName;
+                $classMetadata->associationMappings[$fieldName]['joinTable']['name'] = $this->prefix . $mappedTableName;
             }
         }
     }

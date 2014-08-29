@@ -4,46 +4,21 @@ namespace Webmasters\Doctrine\ORM;
 
 class EntityValidator
 {
-    protected $_em;
-    protected $_entity;
-    protected $_whitelist;
-    protected $_blacklist;
-    protected $_errors = array();
+    protected $em;
+    protected $entity;
+    protected $errors = array();
 
-    public function __construct($em, $entity, $autostart)
+    public function __construct($em, $entity)
     {
-        $this->_em = $em;
-        $this->_entity = $entity;
+        $this->em = $em;
+        $this->entity = $entity;
 
-        if ($autostart) {
-            $this->validateData();
-        }
-    }
-
-    public function setWhitelist(array $whitelist)
-    {
-        $this->_whitelist = $whitelist;
-        $this->_blacklist = null; // keine parallele Nutzung
-        return $this;
-    }
-
-    public function setBlacklist(array $blacklist)
-    {
-        $this->_blacklist = $blacklist;
-        $this->_whitelist = null; // keine parallele Nutzung
-        return $this;
+        $this->validateData();
     }
 
     public function validateData()
     {
-        $data = Util\ArrayMapper::setEntity($this->_entity)->toArray(false);
-
-        // Validierungen eingrenzen
-        if (!empty($this->_whitelist)) {
-            $data = array_intersect_key($data, array_fill_keys($this->_whitelist, ''));
-        } elseif (!empty($this->_blacklist)) {
-            $data = array_diff_key($data, array_fill_keys($this->_blacklist, ''));
-        }
+        $data = Util\ArrayMapper::setEntity($this->entity)->toArray(false);
 
         foreach ($data as $key => $val) {
             $validate = 'validate' . ucfirst($key);
@@ -51,19 +26,17 @@ class EntityValidator
                 $this->$validate($val);
             }
         }
-
-        return $this;
     }
 
     public function getEntityManager()
     {
-        return $this->_em;
+        return $this->em;
     }
 
     public function getRepository($class = null)
     {
         if (empty($class)) {
-            $class = get_class($this->_entity);
+            $class = get_class($this->entity);
         }
 
         return $this->getEntityManager()->getRepository($class);
@@ -71,21 +44,21 @@ class EntityValidator
 
     public function getEntity()
     {
-        return $this->_entity;
+        return $this->entity;
     }
 
     public function addError($error)
     {
-        $this->_errors[] = $error;
+        $this->errors[] = $error;
     }
 
     public function getErrors()
     {
-        return $this->_errors;
+        return $this->errors;
     }
 
     public function isValid()
     {
-        return empty($this->_errors);
+        return empty($this->errors);
     }
 }

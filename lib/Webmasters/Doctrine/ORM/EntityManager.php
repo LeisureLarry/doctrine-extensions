@@ -29,11 +29,13 @@ class EntityManager extends \Doctrine\ORM\EntityManager
         return new EntityManager($conn, $config, $evm);
     }
 
-    public function getValidator($entity, $autostart = true)
+    public function getValidator($entity, $validator = null)
     {
-        $class = get_class($entity);
-        $class_name = preg_replace('/^[A-Z][a-z]+./', '', $class);
-        $validator = 'Validators\\' . $class_name . 'Validator';
+        if (!$className) {
+            $class = get_class($entity);
+            $className = preg_replace('/^[A-Z][a-z]+./', '', $class);
+            $validator = 'Validators\\' . $className . 'Validator';
+        }
 
         if (!class_exists($validator)) {
             throw new \Exception(
@@ -41,6 +43,6 @@ class EntityManager extends \Doctrine\ORM\EntityManager
             );
         }
 
-        return new $validator($this, $entity, $autostart);
+        return new $validator($this, $entity);
     }
 }

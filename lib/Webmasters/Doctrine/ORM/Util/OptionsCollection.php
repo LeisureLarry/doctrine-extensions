@@ -4,22 +4,22 @@ namespace Webmasters\Doctrine\ORM\Util;
 
 class OptionsCollection
 {
-    protected $_options;
+    protected $options;
 
     public function __construct($options)
     {
-        $this->_options = $options;
+        $this->options = $options;
     }
 
     public function all()
     {
-        return $this->_options;
+        return $this->options;
     }
 
     public function has($key)
     {
         $hasOption = false;
-        if (isset($this->_options[$key])) {
+        if (isset($this->options[$key])) {
             $hasOption = true;
         }
 
@@ -28,7 +28,7 @@ class OptionsCollection
 
     public function set($key, $value)
     {
-        $this->_options[$key] = $value;
+        $this->options[$key] = $value;
     }
 
     public function get($key)
@@ -39,6 +39,6 @@ class OptionsCollection
             );
         }
 
-        return $this->_options[$key];
+        return $this->options[$key];
     }
 }
