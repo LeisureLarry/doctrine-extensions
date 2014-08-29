@@ -18,7 +18,7 @@ class EntityValidator
 
     public function validateData()
     {
-        $data = Util\ArrayMapper::setEntity($this->entity)->toArray(false);
+        $data = Util\ArrayMapper::setEntity($this->entity)->toArray(false, false);
 
         foreach ($data as $key => $val) {
             $validate = 'validate' . ucfirst($key);
