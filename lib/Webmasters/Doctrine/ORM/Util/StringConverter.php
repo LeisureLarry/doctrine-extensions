@@ -8,7 +8,7 @@ class StringConverter
     {
         return ltrim(
               strtolower(
-                  preg_replace('/!^([A-Z])/', '_$1', $camelCase)
+                  preg_replace('/([A-Z])/', '_$1', $camelCase)
               ),
               '_'
         );
