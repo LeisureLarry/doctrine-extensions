@@ -31,7 +31,7 @@ class EntityManager extends \Doctrine\ORM\EntityManager
 
     public function getValidator($entity, $validator = null)
     {
-        if (!$className) {
+        if (!$validator) {
             $class = get_class($entity);
             $className = preg_replace('/^[A-Z][a-z]+./', '', $class);
             $validator = 'Validators\\' . $className . 'Validator';
