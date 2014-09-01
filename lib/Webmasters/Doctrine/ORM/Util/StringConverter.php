@@ -27,6 +27,8 @@ class StringConverter
 
     public static function camelizeLcFirst($underscore)
     {
-        return lcfirst(self::camelize($underscore));
+        return lcfirst(
+            self::camelize($underscore)
+        );
     }
 }
