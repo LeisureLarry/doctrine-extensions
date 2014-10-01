@@ -23,14 +23,18 @@ $connectionOptions = array(
 
 // Application/Doctrine configuration
 $applicationOptions = array(
-    'debug_mode' => false,
+    'debug_mode' => true, // in production environment false
 );
 
 // Use Composer autoloading
 require_once 'vendor/autoload.php';
 
 // Get Doctrine entity manager
-$bootstrap = Webmasters\Doctrine\Bootstrap::getInstance($connectionOptions, $applicationOptions);
+$bootstrap = Webmasters\Doctrine\Bootstrap::getInstance(
+    $connectionOptions,
+    $applicationOptions
+);
+
 $em = $bootstrap->getEm();
 
 ```
