@@ -47,7 +47,7 @@ class Bootstrap
             'debug_mode' => true,
             'base_dir' => $baseDir,
             'entity_dir' => $baseDir . '/src/Entities',
-            'proxy_dir' => realpath(sys_get_temp_dir()), // Ablage im Temp-Verzeichnis
+            'proxy_dir' => realpath(ini_get('session.save_path')), // Ablage im Temp-Verzeichnis mit sys_get_temp_dir()
             'vendor_dir' => $vendorDir,
             'gedmo_ext' => array('Timestampable'),
         );
