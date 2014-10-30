@@ -44,12 +44,13 @@ class Bootstrap
 
         $defaultOptions = array(
             'autogenerate_proxy_classes' => true,
-            'debug_mode' => true,
             'base_dir' => $baseDir,
+            'debug_mode' => true,
+            'em_class' => '\\Webmasters\\Doctrine\\ORM\\EntityManager',
             'entity_dir' => $baseDir . '/src/Entities',
+            'gedmo_ext' => array('Timestampable'),
             'proxy_dir' => realpath(ini_get('session.save_path')), // Ablage im Temp-Verzeichnis mit sys_get_temp_dir()
             'vendor_dir' => $vendorDir,
-            'gedmo_ext' => array('Timestampable'),
         );
 
         $this->setConnectionOptions($connectionOptions);
@@ -213,7 +214,8 @@ class Bootstrap
     public function getEm()
     {
         if ($this->entityManager === null) {
-            $this->entityManager = WORM\EntityManager::create(
+            $className = $this->getOption('em_class');
+            $this->entityManager = $className::create(
                 $this->connectionOptions,
                 $this->getOrmConfiguration(),
                 $this->getEventManager()
