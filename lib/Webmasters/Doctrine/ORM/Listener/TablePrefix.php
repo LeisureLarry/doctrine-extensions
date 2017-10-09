@@ -23,7 +23,7 @@ class TablePrefix
     {
         $classMetadata = $eventArgs->getClassMetadata();
         $classMetadata->setPrimaryTable(
-            array('name' => $this->prefix . $classMetadata->getTableName())
+            ['name' => $this->prefix . $classMetadata->getTableName()]
         );
 
         foreach ($classMetadata->getAssociationMappings() as $fieldName => $mapping) {

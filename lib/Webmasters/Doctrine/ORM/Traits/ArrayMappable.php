@@ -27,7 +27,7 @@ trait ArrayMappable
     {
         $attributes = get_object_vars($this);
 
-        $result = array();
+        $result = [];
         foreach ($attributes as $key => $value) {
             if ($decamelize) {
                 $key = StringConverter::decamelize($key);

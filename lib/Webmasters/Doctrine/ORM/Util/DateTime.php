@@ -6,7 +6,7 @@ class DateTime
 {
     protected $raw = null;
     protected $datetime = null;
-    protected $errors = array();
+    protected $errors = [];
 
     public function __construct($value)
     {

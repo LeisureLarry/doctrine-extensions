@@ -12,8 +12,8 @@ class Bootstrap
 {
     protected static $singletonInstance = null;
 
-    protected $connectionOptions = array();
-    protected $applicationOptions = array();
+    protected $connectionOptions = [];
+    protected $applicationOptions = [];
 
     protected $annotationReader;
     protected $cache;
@@ -42,16 +42,16 @@ class Bootstrap
             }
         }
 
-        $defaultOptions = array(
+        $defaultOptions = [
             'autogenerate_proxy_classes' => true,
             'base_dir' => $baseDir,
             'debug_mode' => true,
             'em_class' => '\\Webmasters\\Doctrine\\ORM\\EntityManager',
             'entity_dir' => $baseDir . '/src/Entities',
-            'gedmo_ext' => array('Timestampable'),
+            'gedmo_ext' => ['Timestampable'],
             'proxy_dir' => realpath(ini_get('session.save_path')), // Ablage im Temp-Verzeichnis mit sys_get_temp_dir()
             'vendor_dir' => $vendorDir,
-        );
+        ];
 
         $this->setConnectionOptions($connectionOptions);
         $this->setApplicationOptions($applicationOptions + $defaultOptions);
@@ -62,7 +62,7 @@ class Bootstrap
     {
     }
 
-    public static function getInstance($connectionOptions = array(), $applicationOptions = array())
+    public static function getInstance($connectionOptions = [], $applicationOptions = [])
     {
         if (self::$singletonInstance == null) {
             self::$singletonInstance = new Bootstrap($connectionOptions, $applicationOptions);
@@ -152,7 +152,7 @@ class Bootstrap
             // Wir verwenden die neue Annotations-Syntax für die Entities
             $annotationDriver = new ORM\Mapping\Driver\AnnotationDriver(
                 $this->getCachedAnnotationReader(),
-                array($this->getOption('entity_dir'))
+                [$this->getOption('entity_dir')]
             );
 
             // AnnotationDriver fuer den Entity-Namespace aktivieren
@@ -269,7 +269,7 @@ class Bootstrap
     protected function initGedmoListeners()
     {
         if ($this->getOption('gedmo_ext') && is_array($this->getOption('gedmo_ext'))) {
-            $this->listeners['Gedmo'] = array();
+            $this->listeners['Gedmo'] = [];
             foreach ($this->getOption('gedmo_ext') as $name) {
                 if (is_string($name)) {
                     $listenerClass = '\\Gedmo\\' . $name . '\\' . $name . 'Listener';

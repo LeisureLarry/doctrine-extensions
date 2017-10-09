@@ -6,19 +6,35 @@ class EntityValidator
 {
     protected $em;
     protected $entity;
-    protected $errors = array();
+    protected $errors = [];
 
     public function __construct($em, $entity)
     {
         $this->em = $em;
         $this->entity = $entity;
 
+        if (!($em instanceof \Doctrine\ORM\EntityManager)) {
+            throw new \Exception(
+                sprintf(
+                    'First constructor parameter of %s should be instanceof Doctrine\ORM\EntityManager',
+                    get_class($this)
+                )
+            );
+        }
+
         $this->validateData();
     }
 
     public function validateData()
     {
-        $data = $this->entity->mapToArray(false, false);
+        $requiredMethod = 'mapToArray'; // i.e. Trait ArrayMappable
+        if (!method_exists($this->entity, $requiredMethod)) {
+            throw new \Exception(
+                sprintf('Method %s missing in entity', $requiredMethod)
+            );
+        }
+        
+        $data = $this->entity->$requiredMethod(false, false);
 
         foreach ($data as $key => $val) {
             $validate = 'validate' . ucfirst($key);
