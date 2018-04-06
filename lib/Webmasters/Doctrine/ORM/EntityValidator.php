@@ -8,7 +8,7 @@ class EntityValidator
     protected $entity;
     protected $errors = [];
 
-    public function __construct($em, $entity)
+    public function __construct($em, object $entity)
     {
         $this->em = $em;
         $this->entity = $entity;
