@@ -2,7 +2,7 @@
 
 namespace Webmasters\Doctrine\ORM;
 
-use \Doctrine\ORM\Configuration, \Doctrine\ORM\Events, \Doctrine\DBAL\DriverManager, \Doctrine\Common\EventManager;
+use \Doctrine\ORM\Configuration, \Doctrine\ORM\Events, \Doctrine\DBAL\DriverManager, \Doctrine\Common\EventManager, \Doctrine\DBAL\Types;
 
 class EntityManager extends \Doctrine\ORM\EntityManager
 {
@@ -25,6 +25,12 @@ class EntityManager extends \Doctrine\ORM\EntityManager
             $tablePrefix = new Listener\TablePrefix($prefix);
             $evm->addEventListener(Events::loadClassMetadata, $tablePrefix);
         }
+
+        // Fix stricter type checks of newer DBAL versions
+        Types\Type::overrideType(Types\Type::DATE, 'Webmasters\Doctrine\DBAL\Types\DateType');
+        Types\Type::overrideType(Types\Type::DATETIME, 'Webmasters\Doctrine\DBAL\Types\DateTimeType');
+        Types\Type::overrideType(Types\Type::DATETIMETZ, 'Webmasters\Doctrine\DBAL\Types\DateTimeTzType');
+        Types\Type::overrideType(Types\Type::TIME, 'Webmasters\Doctrine\DBAL\Types\TimeType');
 
         return new EntityManager($conn, $config, $evm);
     }
