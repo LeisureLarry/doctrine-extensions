@@ -1,4 +1,4 @@
-# doctrine-extensions
+# doctrine-extensions for PHP 7.2+
 
 ## Webmasters Doctrine Extensions
 
@@ -10,21 +10,21 @@ Just Another Doctrine2 Extension
 <?php
 
 // MySQL database configuration
-$connectionOptions = array(
-    'default' => array(
+$connectionOptions = [
+    'default' => [
         'driver' => 'pdo_mysql',
         'dbname' => 'example_db',
         'host' => 'localhost',
         'user' => 'root',
         'password' => '',
         'prefix' => '',
-    ),
-);
+    ],
+];
 
 // Application/Doctrine configuration
-$applicationOptions = array(
+$applicationOptions = [
     'debug_mode' => true, // in production environment false
-);
+];
 
 // Use Composer autoloading
 require_once 'vendor/autoload.php';
