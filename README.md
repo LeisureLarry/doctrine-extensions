@@ -1,4 +1,4 @@
-# doctrine-extensions for PHP 7.2+
+# doctrine-extensions for PHP 7.1+
 
 ## Webmasters Doctrine Extensions
 
