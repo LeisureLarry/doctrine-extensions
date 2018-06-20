@@ -38,14 +38,10 @@ class EntityManager extends \Doctrine\ORM\EntityManager
     public function getValidator($entity, $validator = null)
     {
         if (!$validator) {
-            if ($entity instanceof \Doctrine\ORM\Proxy\Proxy) {
-                $class = get_parent_class($entity);
-            } else {
-                $class = get_class($entity);
-            }
-            
-            $className = preg_replace('/^[A-Z][a-z]+./', '', $class);
-            $validator = 'Validators\\' . $className . 'Validator';
+            $class = $this->parseClass(
+                \Doctrine\Common\Util\ClassUtils::getClass($entity)
+            );
+            $validator = 'Validators\\' . $class['classname'] . 'Validator';
         }
 
         if (!class_exists($validator)) {
@@ -55,5 +51,14 @@ class EntityManager extends \Doctrine\ORM\EntityManager
         }
 
         return new $validator($this, $entity);
+    }
+
+    /* Link: http://php.net/manual/de/function.get-class.php#107964 */
+    protected function parseClass($class)
+    {
+        return [
+            'namespace' => array_slice(explode('\\', $class), 0, -1),
+            'classname' => join('', array_slice(explode('\\', $class), -1)),
+        ];
     }
 }
