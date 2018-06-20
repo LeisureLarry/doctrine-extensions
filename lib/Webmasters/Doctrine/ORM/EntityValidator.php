@@ -8,7 +8,7 @@ class EntityValidator
     protected $entity;
     protected $errors = [];
 
-    public function __construct($em, object $entity)
+    public function __construct($em, $entity)
     {
         $this->em = $em;
         $this->entity = $entity;
@@ -17,6 +17,15 @@ class EntityValidator
             throw new \Exception(
                 sprintf(
                     'First constructor parameter of %s should be instanceof Doctrine\ORM\EntityManager',
+                    get_class($this)
+                )
+            );
+        }
+
+        if (!is_object($entity)) {
+            throw new \Exception(
+                sprintf(
+                    'Second constructor parameter of %s should be the object to validate',
                     get_class($this)
                 )
             );
