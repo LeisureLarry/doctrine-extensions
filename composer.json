@@ -20,7 +20,7 @@
     ],
     "require": {
         "php": ">=7.1",
-        "doctrine/orm": ">=2.5.0,<2.6-dev"
+        "doctrine/orm": ">=2.6.0,<2.7-dev"
     },
     "autoload": {
         "psr-0": { "Webmasters": "lib/" }
