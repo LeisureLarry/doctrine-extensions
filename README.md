@@ -39,5 +39,8 @@ $em = $bootstrap->getEm();
 
 ```
 
+### Changelog
+2019-06-08 Changed method name validateData to executeValidation to prevent collisions with an attribute $data in the validated class (thx Peter R)
+
 ### Idea
 [Jan Teriete](https://plus.google.com/106660436858103395374?rel=author)

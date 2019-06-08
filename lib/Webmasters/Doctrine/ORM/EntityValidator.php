@@ -31,26 +31,7 @@ class EntityValidator
             );
         }
 
-        $this->validateData();
-    }
-
-    public function validateData()
-    {
-        $requiredMethod = 'mapToArray'; // i.e. Trait ArrayMappable
-        if (!method_exists($this->entity, $requiredMethod)) {
-            throw new \Exception(
-                sprintf('Method %s missing in entity', $requiredMethod)
-            );
-        }
-        
-        $data = $this->entity->$requiredMethod(false, false);
-
-        foreach ($data as $key => $val) {
-            $validate = 'validate' . ucfirst($key);
-            if (method_exists($this, $validate)) {
-                $this->$validate($val);
-            }
-        }
+        $this->executeValidation();
     }
 
     public function getEntityManager()
@@ -85,5 +66,24 @@ class EntityValidator
     public function isValid()
     {
         return empty($this->errors);
+    }
+
+    protected function executeValidation()
+    {
+        $requiredMethod = 'mapToArray'; // i.e. Trait ArrayMappable
+        if (!method_exists($this->entity, $requiredMethod)) {
+            throw new \Exception(
+                sprintf('Method %s missing in entity', $requiredMethod)
+            );
+        }
+        
+        $data = $this->entity->$requiredMethod(false, false);
+
+        foreach ($data as $key => $val) {
+            $validate = 'validate' . ucfirst($key);
+            if (method_exists($this, $validate)) {
+                $this->$validate($val);
+            }
+        }
     }
 }
